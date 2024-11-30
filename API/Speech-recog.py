@@ -49,7 +49,7 @@ def recognize():
         if response["error"]:
             return jsonify(response), 400
         
-        response["count"] = math.floor((transcription.count("kill myself") + transcription.count("jump off E7")) / 2)
+        response["count"] = transcription.count("kill myself") + transcription.count("jump off E7")
 
 
         return jsonify(response)

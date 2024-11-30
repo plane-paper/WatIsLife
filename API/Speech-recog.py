@@ -8,7 +8,6 @@ import os
 app = Flask(__name__)
 
 @app.route('api/recognize', methods=['POST'])
-
 def recognize():
     if 'audio' not in request.files:
         return jsonify({"Error": "No audio file found"}), 400
@@ -37,7 +36,7 @@ def recognize():
         except sr.UnknownValueError: #For some reason VR decides to throw error at this
             response["error"] = "Cannot recognize speech"
 
-        os.remove(path)
+        os.remove(path) #Optional cleanup
 
         if response["error"]:
             return jsonify(response), 400

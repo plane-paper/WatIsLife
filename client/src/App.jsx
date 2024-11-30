@@ -4,7 +4,7 @@ import AudioRecorder from './components'
 function App() {
   return (
     <>
-      <h2>WatIsLife?</h2>
+      <h1>WatIsLife</h1>
       <AudioRecorder />
     </>
   )

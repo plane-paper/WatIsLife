@@ -1,18 +1,35 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 const AudioRecorder = () => {
   const [isRecording, setIsRecording] = useState(false);
-  const [audioChunks, setAudioChunks] = useState([]);
+  const [audioUrl, setAudioUrl] = useState(null);
   const mediaRecorderRef = useRef(null);
   const audioRef = useRef(null);
 
+  // Cleanup function to revoke object URLs
+  useEffect(() => {
+    return () => {
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+      }
+    };
+  }, [audioUrl]);
+
   const startRecording = async () => {
+    // Revoke previous audio URL if exists
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl);
+      setAudioUrl(null);
+    }
+
     try {
       // Request microphone access
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       
       // Create MediaRecorder instance
-      const mediaRecorder = new MediaRecorder(stream);
+      const mediaRecorder = new MediaRecorder(stream, { 
+        mimeType: 'audio/webm' 
+      });
       mediaRecorderRef.current = mediaRecorder;
 
       // Initialize audio chunks
@@ -26,16 +43,21 @@ const AudioRecorder = () => {
       };
 
       mediaRecorder.onstop = () => {
+        // Ensure stream tracks are stopped
+        stream.getTracks().forEach(track => track.stop());
+
         // Create audio blob and set it as source
         const audioBlob = new Blob(chunks, { type: 'audio/webm' });
-        const audioUrl = URL.createObjectURL(audioBlob);
         
-        if (audioRef.current) {
-          audioRef.current.src = audioUrl;
+        // Revoke any existing object URL before creating a new one
+        if (audioUrl) {
+          URL.revokeObjectURL(audioUrl);
         }
+
+        const newAudioUrl = URL.createObjectURL(audioBlob);
         
-        // Update state
-        setAudioChunks(chunks);
+        // Update state with new audio URL
+        setAudioUrl(newAudioUrl);
       };
 
       // Start recording
@@ -54,15 +76,19 @@ const AudioRecorder = () => {
     }
   };
 
+  const handlePlaybackError = (e) => {
+    console.error('Audio playback error:', e);
+    alert('Unable to play audio. Check browser compatibility and audio format.');
+  };
+
   return (
-    <div className="flex flex-col items-center p-4 space-y-4">
-      <h2 className="text-xl font-bold">Audio Recorder</h2>
+    <div>
+      <h2>Audio Recorder</h2>
       
-      <div className="flex space-x-4 items-center">
+      <div>
         <button 
           onClick={startRecording} 
           disabled={isRecording}
-          className="px-4 py-2 bg-green-500 text-white rounded disabled:bg-green-300"
         >
           Start Recording
         </button>
@@ -70,21 +96,25 @@ const AudioRecorder = () => {
         <button 
           onClick={stopRecording} 
           disabled={!isRecording}
-          className="px-4 py-2 bg-red-500 text-white rounded disabled:bg-red-300"
         >
           Stop Recording
         </button>
       </div>
 
-      {audioChunks.length > 0 && (
-        <div className="mt-4 w-full">
+      {audioUrl && (
+        <div>
           <audio 
+            key={audioUrl} // Force re-render of audio element
             ref={audioRef} 
+            src={audioUrl}
             controls 
-            className="w-full"
+            onError={handlePlaybackError}
           >
             Your browser does not support the audio element.
           </audio>
+          <div>
+            Audio Format: WebM
+          </div>
         </div>
       )}
     </div>

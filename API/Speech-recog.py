@@ -1,39 +1,51 @@
 #initializer
 import speech_recognition as sr
+from flask import Flask, jsonify, request
+import os
 #Dependent on PyAudio
 
-def speechRecog (source):
-    audio = r.listen(source)
+#Flask setup
+app = Flask(__name__)
+
+@app.route('api/recognize', methods=['POST'])
+
+def speechRecog(source):
+    if 'source' not in request.files:
+        return jsonify({"Error": "No audio file found"}), 400
+    audio_file = request.files['source'] #Maybe add a validation here?
 
     response = { #Response dict, refreshes each time
         "error": None,
         "transcription": None
     }
 
-    print("Processing, please wait...")
-
     try:
-        response["transcription"] = r.recognize_google(audio) #Google module because it works
-    except sr.RequestError: #Basic request error
-        raise Exception("API Error")
-    except sr.UnknownValueError: #For some reason VR decides to throw error at this
-        response["error"] = "Unable to recognize speech"
+        r = sr.Recognizer()
 
-    return response
+        path = os.path.join('/temp', audio_file.filename)
+        audio_file.save(path)
 
-#Main
-r = sr.Recognizer()
-mic = sr.Microphone() #Dependent on pyaudio
+        with sr.AudioFile(path) as source:
+            r.adjust_for_ambient_noise(source)
+            audio = r.record(source)
 
-while True: #Full loop
-    print("Now Listening...")
 
-    response = speechRecog(r, mic) #Page for a response
+        try:
+            response["transcription"] = r.recognize_google(audio) #Google module because it works
+        except sr.RequestError: #Basic request error
+            response["error"] = "API Error"
+        except sr.UnknownValueError: #For some reason VR decides to throw error at this
+            response["error"] = "Cannot recognize speech"
 
-    if response["error"] == "Unable to recognize speech":
-        print("I didn't catch that. Please try again.")
+        os.remove(path)
 
-    elif response["transcription"] == "exit":
-        break
+        if response["error"]:
+            return jsonify(response), 400
+        return jsonify(response)
 
-    print(response["transcription"])
+
+    except Exception as e:
+        return jsonify({"Error": str(e)}), 500
+
+if __name__ == "__main__":
+    app.run(debug=True)

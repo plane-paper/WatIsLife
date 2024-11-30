@@ -7,7 +7,12 @@ import os
 #Flask setup
 app = Flask(__name__)
 
-@app.route('api/recognize', methods=['POST'])
+@app.route('/')
+def main():
+    return 'WatIsLife'
+
+
+@app.route('/api/recognize', methods=['POST'])
 def recognize():
     if 'audio' not in request.files:
         return jsonify({"Error": "No audio file found"}), 400
@@ -47,4 +52,4 @@ def recognize():
         return jsonify({"Error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=2600)

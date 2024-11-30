@@ -1,10 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-const AudioRecorder = () => {
+const AudioRecorder = ({
+  autorecord = true,
+  maxrecord = 10000
+}
+) => {
   const [isRecording, setIsRecording] = useState(false);
   const [audioUrl, setAudioUrl] = useState(null);
   const mediaRecorderRef = useRef(null);
   const audioRef = useRef(null);
+  const streamRef = useRef(null);
 
   // Cleanup function to revoke object URLs
   useEffect(() => {
@@ -12,8 +17,18 @@ const AudioRecorder = () => {
       if (audioUrl) {
         URL.revokeObjectURL(audioUrl);
       }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
     };
   }, [audioUrl]);
+
+
+  useEffect(() => {
+    if (autorecord) {
+      startRecording();
+    }
+  }, [autorecord]);
 
   const startRecording = async () => {
     // Revoke previous audio URL if exists
@@ -63,6 +78,16 @@ const AudioRecorder = () => {
       // Start recording
       mediaRecorder.start();
       setIsRecording(true);
+
+      if (maxrecord > 0){
+        setTimeout(() => {
+          if (mediaRecorderRef.current && 
+            mediaRecorderRef.current.state === 'recording') {
+            console.log("Ten seconds have passed");
+            stopRecording();
+          }
+        }, maxrecord);
+      }
     } catch (error) {
       console.error('Error accessing microphone:', error);
       alert('Could not access microphone. Please check permissions.');

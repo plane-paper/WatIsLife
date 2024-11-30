@@ -9,10 +9,10 @@ app = Flask(__name__)
 
 @app.route('api/recognize', methods=['POST'])
 
-def speechRecog(source):
-    if 'source' not in request.files:
+def recognize():
+    if 'audio' not in request.files:
         return jsonify({"Error": "No audio file found"}), 400
-    audio_file = request.files['source'] #Maybe add a validation here?
+    audio_file = request.files['audio'] #Maybe add a validation here?
 
     response = { #Response dict, refreshes each time
         "error": None,

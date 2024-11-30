@@ -2,7 +2,6 @@
 import speech_recognition as sr
 from flask import Flask, jsonify, request
 import os
-import math
 #Dependent on PyAudio
 
 #Flask setup

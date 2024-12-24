@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify
 from blueprints import blueprints
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 for bp in blueprints: 
     app.register_blueprint(bp)

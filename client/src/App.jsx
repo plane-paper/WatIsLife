@@ -1,13 +1,21 @@
-import { useState } from 'react'
-import AudioRecorder from './components'
+import AudioRecorder from './components';
 
 function App() {
+  const handleProcessingComplete = (data) => {
+    console.log('Processing results:', data);
+    // Handle the response data here
+  };
+
   return (
-    <>
-      <h1>WatIsLife</h1>
-      <AudioRecorder />
-    </>
-  )
+    <div>
+      <h1>Audio Processing App</h1>
+      <AudioRecorder 
+        autorecord={false}
+        maxrecord={10000}
+        onProcessingComplete={handleProcessingComplete}
+      />
+    </div>
+  );
 }
 
-export default App
+export default App;

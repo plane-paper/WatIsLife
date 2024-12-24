@@ -54,7 +54,7 @@ def recognize():
                 return jsonify({
                     "error": None,
                     "transcription": transcription,
-                    "count": transcription.tolower().count("kill myself") + transcription.tolower().count("jump off E7")
+                    "count": transcription.lower().count("kill myself") + transcription.lower().count("jump off E7")
                 })
 
         except Exception as e:

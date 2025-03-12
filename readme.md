@@ -19,7 +19,7 @@ Uses microphone permissions for obvious purposes so please grant that the first 
 
 ### Current
 
-Not released yet. TBD.
+Added a functioning discord bot in [WatIsLife-Discord Repo](https://github.com/plane-paper/WatIsLife-Discord/tree/main)
 
 ### Anticipated
 
